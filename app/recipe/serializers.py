@@ -5,6 +5,7 @@ from rest_framework import serializers
 
 from core.models import Recipe, Tag, Ingredient
 
+
 class IngredientSerializer(serializers.ModelSerializer):
     """Serializer for ingredient."""
 
@@ -12,6 +13,7 @@ class IngredientSerializer(serializers.ModelSerializer):
         model = Ingredient
         fields = ['id', 'name']
         read_only_fields = ['id']
+
 
 class TagSerializer(serializers.ModelSerializer):
     """Serializer for tags"""
@@ -21,6 +23,7 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
         read_only_fields = ['id']
 
+
 class RecipeSerializers(serializers.ModelSerializer):
     """Serializer for recipe"""
 
@@ -29,7 +32,13 @@ class RecipeSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ['id', 'title', 'time_minutes', 'price', 'link', 'tags', 'ingredients']
+        fields = ['id',
+                  'title',
+                  'time_minutes',
+                  'price',
+                  'link',
+                  'tags',
+                  'ingredients']
         read_only_fields = ['id']
 
     def _get_or_create_tags(self, tags, recipe):
@@ -53,7 +62,6 @@ class RecipeSerializers(serializers.ModelSerializer):
             )
             recipe.ingredients.add(ingredient_obj)
 
-
     def create(self, validated_data):
         """Create a recipe"""
         tags = validated_data.pop('tags', [])
@@ -72,7 +80,6 @@ class RecipeSerializers(serializers.ModelSerializer):
             instance.tags.clear()
             self._get_or_create_tags(tags, instance)
 
-
         if ingredients is not None:
             instance.ingredients.clear()
             self._get_or_create_ingredients(ingredients, instance)
@@ -89,6 +96,7 @@ class RecipeDetailsSerializer(RecipeSerializers):
 
     class Meta(RecipeSerializers.Meta):
         fields = RecipeSerializers.Meta.fields + ['description', 'image']
+
 
 class RecipeImageSerializer(serializers.ModelSerializer):
     """Serializer for uploading images ro recipes"""

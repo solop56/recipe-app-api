@@ -17,6 +17,7 @@ from rest_framework.permissions import IsAuthenticated
 from core.models import Recipe, Tag, Ingredient
 from recipe import serializers
 
+
 @extend_schema_view(
     list=extend_schema(
         parameters=[
@@ -56,11 +57,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
             ingredients_ids = self._params_to_ints(ingredients)
             queryset = queryset.filter(ingredients__id__in=ingredients_ids)
 
-        return queryset.filter(user=self.request.user).order_by('-id').distinct()
+        return (
+            queryset.filter(user=self.request.user)
+            .order_by('-id')
+            .distinct()
+        )
 
     def get_serializer_class(self):
         """Return the serializer class for request"""
-        if  self.action == 'list':
+        if self.action == 'list':
             return serializers.RecipeSerializers
         elif self.action == 'upload_image':
             return serializers.RecipeImageSerializer
@@ -70,7 +75,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Create a new recipe"""
         serializer.save(user=self.request.user)
-
 
     @action(methods=['POST'], detail=True, url_path='upload-image')
     def upload_image(self, request, pk=None):
@@ -90,7 +94,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         parameters=[
             OpenApiParameter(
                 'assigned_only',
-                OpenApiTypes.INT, enum=[0,1],
+                OpenApiTypes.INT, enum=[0, 1],
                 description='Filter by items assigned to recipes.',
             ),
         ]
@@ -103,6 +107,7 @@ class BaseRecipeAttrViewSet(mixins.DestroyModelMixin,
     """Base viewset for recipe attributes"""
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+
     def get_queryset(self):
         """Filter queryset to authenticate user"""
         assigned_only = bool(
@@ -112,7 +117,11 @@ class BaseRecipeAttrViewSet(mixins.DestroyModelMixin,
         if assigned_only:
             queryset = queryset.filter(recipe__isnull=False)
 
-        return queryset.filter(user=self.request.user).order_by('-name').distinct()
+        return (
+            queryset.filter(user=self.request.user)
+            .order_by('-name')
+            .distinct()
+        )
 
 
 class TagViewSet(BaseRecipeAttrViewSet):
@@ -125,6 +134,3 @@ class IngredientViewSet(BaseRecipeAttrViewSet):
     """Manage ingredients in the database"""
     serializer_class = serializers.IngredientSerializer
     queryset = Ingredient.objects.all()
-
-
-
